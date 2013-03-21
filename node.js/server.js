@@ -1,10 +1,7 @@
-// reference the http module so we can create a webserver
-var http = require("http");
-
-// create a server
-http.createServer(function(req, res) {
-    // on every request, we'll output 'Hello world'
-    res.end("Hello world from Cloud9!");
+require('http').createServer(function handleRequest(req,res){
+    res.writeHead(200, {'content-type' : 'text/plain'});
+    console.log("recceived");
+    res.end('Yayay');
 }).listen(process.env.PORT, process.env.IP);
 
 // Note: when spawning a server on Cloud9 IDE, 

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+		<meta charset="utf-8" />
+
+		<!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame
+		Remove this if you use the .htaccess -->
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+		<title>maps</title>
+		<meta name="description" content="" />
+		<meta name="author" content="John" />
+
+		<meta name="viewport" content="width=device-width; initial-scale=1.0" />
+
+		<!-- Replace favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<script src="../js/data.js"></script>
+		<title>Google Maps JavaScript API v3 Example: Limit Panning and Zoom</title>
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+		<script src="http://www.google.com/jsapi"></script>
+		<script src="../js/smartinfowindow.js"></script>
+
+		<!-- Le styles -->
+		<link href="../css/bootstrap.css" rel="stylesheet">
+		<style type="text/css">
+			.mysidebar {
+				float: left;
+				background: rgb(245,246,246); /* Old browsers */
+				background: -moz-linear-gradient(top,  rgba(245,246,246,1) 0%, rgba(219,220,226,1) 21%, rgba(221,223,227,1) 80%, rgba(245,246,246,1) 100%); /* FF3.6+ */
+				background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(245,246,246,1)), color-stop(21%,rgba(219,220,226,1)), color-stop(80%,rgba(221,223,227,1)), color-stop(100%,rgba(245,246,246,1))); /* Chrome,Safari4+ */
+				background: -webkit-linear-gradient(top,  rgba(245,246,246,1) 0%,rgba(219,220,226,1) 21%,rgba(221,223,227,1) 80%,rgba(245,246,246,1) 100%); /* Chrome10+,Safari5.1+ */
+				background: -o-linear-gradient(top,  rgba(245,246,246,1) 0%,rgba(219,220,226,1) 21%,rgba(221,223,227,1) 80%,rgba(245,246,246,1) 100%); /* Opera 11.10+ */
+				background: -ms-linear-gradient(top,  rgba(245,246,246,1) 0%,rgba(219,220,226,1) 21%,rgba(221,223,227,1) 80%,rgba(245,246,246,1) 100%); /* IE10+ */
+				background: linear-gradient(to bottom,  rgba(245,246,246,1) 0%,rgba(219,220,226,1) 21%,rgba(221,223,227,1) 80%,rgba(245,246,246,1) 100%); /* W3C */
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f5f6f6', endColorstr='#f5f6f6',GradientType=0 ); /* IE6-9 */
+				width: 300px;
+				height: 400px;
+				-webkit-border-radius: 6px;
+				-moz-border-radius: 6px;
+				border-radius: 6px;
+			}
+		</style>
+		<link href="../css/bootstrap-responsive.css" rel="stylesheet">
+	</head>
+
+	<body onload="init()">
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
+                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+					<a class="brand" href="index.html" style = "margin-left: 20px">UCSD Triton Bikes</a>
+					<div class="nav-collapse collapse">
+						<ul class="nav">
+							<li>
+								<a href="index.html">Home</a>
+							</li>
+							<li>
+								<a href="#about">About</a>
+							</li>
+							<li>
+								<a href="#contact">Contact</a>
+							</li>
+							<li class = "active">
+								<a href="maps.html">Map</a>
+							</li>
+						</ul>
+					</div><!--/.nav-collapse -->
+				</div>
+			</div>
+		</div>
+		<div class="container">
+			<div id = "temp-div" style = "margin-bottom: 55px; margin-top: 40px; height: 10px; width: 1000px">
+				<h1 style = "font-size:2em; float: left">Find the Closest Bike Station Near You!</h1>
+				<p style = "float: left; margin-left: 30px; margin-top: 13px">
+					<a class="btn btn-primary">Click Here &raquo;</a>
+				</p>
+			</div>
+			<div class = "hero-unit" style = "padding: 30px">
+				<div class = "mysidebar">
+					<div style ="margin-left: 20px; margin-top: 20px;">
+						<h1 style = "font-size: 1.5em; margin-bottom: 20px">Search for Directions</h1>
+						<form action="contact.php" method="post" id="change-form">
+							<input type="hidden" name="token" value="<?php echo $newToken; ?>">
+
+							<div class="rowElem" style= "margin-bottom: 10px">
+								<label for="req-name">From:</label>
+								<input type="text" id="req-name" placeholder="i.e. Revelle Plaza" name="req-name" class="required" minlength="2" value="" />
+							</div>
+
+							<div class="rowElem">
+								<label for="req-email">Station number:</label>
+								<input type="text" name="req-email" placeholder="i.e. m1,2,3,4..." class="required email" value="" />
+							</div>
+							<a class="btn btn-primary" style = "float:right; margin-right: 60px;">Go! &raquo;</a>
+						</form>
+					</div>
+				</div>
+				<div id="map" style="width:681px; height:618px;margin-left: auto; margin-right: auto;"></div>
+			</div>
+
+		</div>
+		<script type="text/javascript">
+			var map, cloud;
+			var counter = 0;
+			var markers = [];
+
+			function init() {
+				var options = {
+					zoom : 15,
+					center : new google.maps.LatLng(32.87, -117),
+					mapTypeId : google.maps.MapTypeId.HYBRID
+				}
+				map = new google.maps.Map(document.getElementById('map'), options);
+				for (var i = 0; i < 15; i++) {
+					makeMarker(locations[i]);
+				}
+				centerMap();
+			}
+
+			function centerMap() {
+				map.setCenter(markers[0].getPosition());
+			}
+
+			function makeMarker(location) {
+				var markerOptions = {
+					map : map,
+					position : new google.maps.LatLng(location.lat, location.lng)
+				};
+				var marker = new google.maps.Marker(markerOptions);
+				markers.push(marker);
+				var content = '<div style="text-align: center; font-size:14px;"><center><b>Diamantino, Brazil</b></center><img width="240" height="180" src="http://mw2.google.com/mw-panoramio/photos/small/7253919.jpg"/><div style="margin: auto; text-align: right; width: 240px;" class="linkbutton"><a href="http://www.panoramio.com/user/279908">Edson Walter Cavalari</a></div><div class="linkbutton"><a href="http://www.panoramio.com/photo/7253919" target="_blank">See more photos at Panoramio.com</a></div><br/><div class="linkbutton"><a href="http://www.google.com/search?q=site:wikipedia.org+Diamantino,Brazil&amp;btnI=I\'m+Feeling+Lucky" target="_blank">Read more about this location</a></div><div class="linkbutton"><a href="javascript:void(0)" id="zoomLink">Zoom in to this location</a></div></div>';
+
+				google.maps.event.addListener(marker, 'click', function(e) {
+					var infobox = new SmartInfoWindow({
+						position : marker.getPosition(),
+						map : map,
+						content : content
+					});
+				});
+			}
+		</script>
+        
+    	<!-- Le javascript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script src="../js/jquery.js"></script>
+		<script src="../js/bootstrap-transition.js"></script>
+		<script src="../js/bootstrap-alert.js"></script>
+		<script src="../js/bootstrap-modal.js"></script>
+		<script src="../js/bootstrap-dropdown.js"></script>
+		<script src="../js/bootstrap-scrollspy.js"></script>
+		<script src="../js/bootstrap-tab.js"></script>
+		<script src="../js/bootstrap-tooltip.js"></script>
+		<script src="../js/bootstrap-popover.js"></script>
+		<script src="../js/bootstrap-button.js"></script>
+		<script src="../js/bootstrap-collapse.js"></script>
+		<script src="../js/bootstrap-carousel.js"></script>
+		<script src="../js/bootstrap-typeahead.js"></script>
+	</body>
+</html>
